@@ -2,10 +2,6 @@ from threading import Thread
 from flask import current_app, render_template
 import requests
 
-
-# -------------------------------------------------------------
-# SendGrid usando thread para não travar o servidor
-# -------------------------------------------------------------
 def send_async_sendgrid(app, to, subject, html):
     with app.app_context():
         api_key = app.config['SENDGRID_API_KEY']
@@ -37,20 +33,14 @@ def send_async_sendgrid(app, to, subject, html):
         print("STATUS DO SENDGRID:", response.status_code, flush=True)
         print("RESPOSTA:", response.text, flush=True)
 
-
-# -------------------------------------------------------------
-# Função principal chamada pelo sistema Flask
-# -------------------------------------------------------------
 def send_email(to, subject, template, **kwargs):
     app = current_app._get_current_object()
 
-    # prefixo do Flasky
     subject = f"{app.config['FLASKY_MAIL_SUBJECT_PREFIX']} {subject}"
 
-    # renderiza template.html
     html = render_template(template + '.html', **kwargs)
 
-    # thread para envio assíncrono
     thr = Thread(target=send_async_sendgrid, args=[app, to, subject, html])
     thr.start()
     return thr
+
